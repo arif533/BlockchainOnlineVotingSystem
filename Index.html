@@ -1,0 +1,1489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#06122B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>भारत निर्वाचन आयोग · Online Voting Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@400;500;600;700;800&family=Noto+Sans:wght@300;400;500;600&family=Noto+Sans+Devanagari:wght@400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ════════════════════════════════════
+   DESIGN TOKENS
+════════════════════════════════════ */
+:root {
+  --saffron:      #FF6B00;
+  --saffron-d:    #D45800;
+  --saffron-l:    #FF8C38;
+  --saffron-bg:   #FFF3EB;
+  --saffron-glow: rgba(255,107,0,0.18);
+  --green:        #0F7A40;
+  --green-l:      #17A056;
+  --green-bg:     #E6F4EE;
+  --navy:         #06122B;
+  --navy-2:       #091830;
+  --navy-3:       #0D2040;
+  --navy-card:    rgba(9,24,48,0.97);
+  --white:        #FFFFFF;
+  --off:          #F6F8FC;
+  --border:       #E0E6F0;
+  --border-d:     #C8D4E8;
+  --text:         #111827;
+  --text-2:       #374151;
+  --muted:        #6B7A99;
+  --muted-l:      #9BAABF;
+  --error:        #DC2626;
+  --success:      #15803D;
+  --warn:         #B45309;
+  --r:            12px;
+  --r-sm:         8px;
+  --shadow-sm:    0 2px 8px rgba(6,18,43,0.08);
+  --shadow:       0 4px 20px rgba(6,18,43,0.12);
+  --shadow-lg:    0 12px 48px rgba(6,18,43,0.18);
+  --fh:           'Baloo 2', sans-serif;
+  --fb:           'Noto Sans', sans-serif;
+  --fd:           'Noto Sans Devanagari', sans-serif;
+  --fm:           'JetBrains Mono', monospace;
+
+  /* Layout */
+  --header-h:     60px;
+  --nav-h:        52px; /* mobile bottom nav */
+}
+
+/* ════════════════════════════════════
+   RESET & BASE
+════════════════════════════════════ */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { font-size: 16px; scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+body {
+  font-family: var(--fb);
+  background: var(--off);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+button, input, select { font-family: inherit; }
+img { max-width: 100%; }
+
+/* ════════════════════════════════════
+   TOP HEADER — sticky, gov branding
+════════════════════════════════════ */
+.top-header {
+  position: sticky; top: 0; z-index: 300;
+  background: var(--navy);
+  box-shadow: 0 2px 12px rgba(0,0,0,0.35);
+}
+.flag-bar { display: flex; height: 4px; }
+.flag-bar div { flex: 1; }
+.fb-o { background: var(--saffron); }
+.fb-w { background: #fff; }
+.fb-g { background: var(--green); }
+
+.header-body {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: var(--header-h);
+  gap: 12px;
+}
+.hb-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; flex-shrink: 0; }
+.hb-wheel {
+  width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0;
+  background: conic-gradient(var(--saffron) 0 120deg, #fff 120deg 240deg, var(--green) 240deg 360deg);
+  display: flex; align-items: center; justify-content: center; position: relative;
+}
+.hb-wheel::after {
+  content: ''; width: 16px; height: 16px; border-radius: 50%;
+  background: var(--navy); position: absolute;
+  border: 1.5px solid rgba(255,255,255,0.2);
+}
+.hb-titles { line-height: 1.25; }
+.hb-dev  { font-family: var(--fd); font-size: 0.62rem; color: #8899C4; }
+.hb-eng  { font-family: var(--fh); font-size: 0.88rem; font-weight: 700; color: #fff; }
+.hb-right { display: flex; align-items: center; gap: 14px; }
+.hb-live {
+  display: flex; align-items: center; gap: 6px;
+  font-family: var(--fm); font-size: 0.58rem; color: var(--green-l);
+  background: rgba(15,122,64,0.15); border: 1px solid rgba(15,122,64,0.3);
+  padding: 4px 10px; border-radius: 20px; white-space: nowrap;
+}
+.live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green-l); animation: blink 1.8s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+.hb-time { font-family: var(--fm); font-size: 0.6rem; color: var(--muted-l); text-align: right; line-height: 1.5; }
+
+/* ════════════════════════════════════
+   PAGE SHELL — desktop two-col, mobile single
+════════════════════════════════════ */
+.page-shell {
+  max-width: 1100px; margin: 0 auto;
+  padding: 24px 20px 80px; /* bottom pad for mobile nav */
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+/* ════════════════════════════════════
+   LEFT SIDEBAR
+════════════════════════════════════ */
+.sidebar { display: flex; flex-direction: column; gap: 14px; }
+.widget {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 16px; box-shadow: var(--shadow-sm);
+}
+.widget-title {
+  font-family: var(--fm); font-size: 0.58rem; text-transform: uppercase;
+  letter-spacing: 0.12em; color: var(--muted); margin-bottom: 12px;
+  padding-bottom: 8px; border-bottom: 1px solid var(--border);
+}
+.stat-row { margin-bottom: 10px; }
+.stat-num { font-family: var(--fh); font-size: 1.3rem; font-weight: 700; color: var(--navy); line-height: 1; }
+.stat-lbl { font-size: 0.7rem; color: var(--muted); }
+.stat-bar { height: 4px; background: var(--border); border-radius: 2px; margin-top: 5px; }
+.stat-fill { height: 100%; border-radius: 2px; transition: width 1.2s ease; }
+.fill-o { background: var(--saffron); }
+.fill-g { background: var(--green-l); }
+.sec-row { display: flex; align-items: center; gap: 8px; font-size: 0.74rem; color: var(--text-2); padding: 5px 0; }
+.sec-row .ic { font-size: 0.88rem; flex-shrink: 0; }
+.sec-ok  { color: var(--success); font-family: var(--fm); font-size: 0.6rem; margin-left: auto; }
+
+/* ════════════════════════════════════
+   MAIN CONTENT COLUMN
+════════════════════════════════════ */
+.main-col { min-width: 0; }
+
+/* ════════════════════════════════════
+   SCREENS
+════════════════════════════════════ */
+.screen { display: none; }
+.screen.active { display: block; animation: fadeUp 0.35s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ════════════════════════════════════
+   STEP PROGRESS BAR
+════════════════════════════════════ */
+.step-bar {
+  display: flex; align-items: center;
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 20px; margin-bottom: 16px;
+  box-shadow: var(--shadow-sm); gap: 0; overflow-x: auto;
+}
+.step-item { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; }
+.step-circle {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--fm); font-size: 0.65rem; font-weight: 600;
+  border: 2px solid var(--border); background: var(--white); color: var(--muted);
+  transition: all 0.3s;
+}
+.step-circle.done    { background: var(--green); border-color: var(--green); color: #fff; }
+.step-circle.current { background: var(--saffron); border-color: var(--saffron); color: #fff; box-shadow: 0 0 0 4px var(--saffron-bg); }
+.step-lbl { font-size: 0.6rem; color: var(--muted-l); margin-top: 4px; white-space: nowrap; }
+.step-lbl.current { color: var(--saffron); font-weight: 600; }
+.step-line { flex: 1; height: 2px; background: var(--border); margin: 0 4px 16px; min-width: 20px; transition: background 0.3s; }
+.step-line.done { background: var(--green); }
+
+/* ════════════════════════════════════
+   CARD
+════════════════════════════════════ */
+.card {
+  background: var(--white); border: 1px solid var(--border);
+  border-radius: var(--r); box-shadow: var(--shadow); overflow: hidden;
+}
+.card-head {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-3) 100%);
+  padding: 24px 24px 20px; position: relative; overflow: hidden;
+}
+.card-head::before {
+  content: ''; position: absolute;
+  width: 180px; height: 180px; border-radius: 50%;
+  background: rgba(255,107,0,0.07);
+  top: -60px; right: -60px;
+}
+.card-head::after {
+  content: ''; position: absolute;
+  width: 100px; height: 100px; border-radius: 50%;
+  background: rgba(15,122,64,0.06);
+  bottom: -30px; left: 20px;
+}
+.ch-tag {
+  font-family: var(--fm); font-size: 0.58rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--saffron-l); margin-bottom: 5px; position: relative; z-index: 1;
+}
+.ch-title { font-family: var(--fh); font-size: 1.25rem; font-weight: 700; color: #fff; position: relative; z-index: 1; line-height: 1.2; }
+.ch-sub   { font-size: 0.78rem; color: #8899BB; margin-top: 5px; position: relative; z-index: 1; line-height: 1.5; }
+.card-body { padding: 20px 24px; }
+
+/* ════════════════════════════════════
+   FORM CONTROLS
+════════════════════════════════════ */
+.form-group { margin-bottom: 16px; }
+.form-label {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 0.78rem; font-weight: 600; color: var(--text-2); margin-bottom: 6px;
+}
+.req { color: var(--error); }
+.hint { color: var(--muted); font-weight: 400; font-size: 0.7rem; }
+
+input[type=text], input[type=tel], input[type=number], input[type=password], select, textarea {
+  width: 100%; padding: 11px 14px;
+  border: 1.5px solid var(--border); border-radius: var(--r-sm);
+  font-size: 0.9rem; color: var(--text); background: var(--white);
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none; appearance: none;
+}
+input:focus, select:focus { border-color: var(--saffron); box-shadow: 0 0 0 3px var(--saffron-glow); }
+input.ok { border-color: var(--green); }
+input.err { border-color: var(--error); }
+.row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.row-3 { display: grid; grid-template-columns: 80px 80px 1fr; gap: 8px; }
+
+select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 4.5L11 1' stroke='%236B7A99' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px;
+}
+
+/* ════════════════════════════════════
+   BUTTONS
+════════════════════════════════════ */
+.btn {
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+  width: 100%; padding: 13px 20px; border-radius: var(--r-sm);
+  font-size: 0.9rem; font-weight: 600; font-family: var(--fb);
+  cursor: pointer; border: none; transition: all 0.2s; text-decoration: none;
+  touch-action: manipulation; -webkit-tap-highlight-color: transparent;
+  min-height: 48px; /* accessible touch target */
+}
+.btn-primary { background: var(--saffron); color: #fff; }
+.btn-primary:hover  { background: var(--saffron-d); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,107,0,0.3); }
+.btn-primary:active { transform: translateY(0); box-shadow: none; }
+.btn-green  { background: var(--green); color: #fff; }
+.btn-green:hover  { background: var(--green-l); transform: translateY(-1px); box-shadow: 0 6px 18px rgba(15,122,64,0.3); }
+.btn-green:active { transform: translateY(0); }
+.btn-ghost  { background: var(--off); color: var(--text-2); border: 1.5px solid var(--border); }
+.btn-ghost:hover  { border-color: var(--saffron); color: var(--saffron); background: var(--saffron-bg); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+.btn-sm { padding: 9px 16px; font-size: 0.8rem; width: auto; min-height: 40px; }
+.btn-link { background: none; border: none; color: var(--saffron); font-size: 0.8rem; font-weight: 600; cursor: pointer; padding: 6px 0; width: auto; min-height: auto; display: inline-flex; text-decoration: underline; font-family: var(--fb); }
+.btn-link:disabled { color: var(--muted); opacity: 0.6; }
+.btn-row { display: flex; gap: 10px; flex-direction: column; }
+
+/* ════════════════════════════════════
+   INFO BOXES
+════════════════════════════════════ */
+.info-box {
+  display: flex; gap: 10px; padding: 12px 14px; border-radius: var(--r-sm);
+  font-size: 0.8rem; line-height: 1.55; margin-bottom: 14px;
+}
+.info-box .ic { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+.ib-info    { background: #EFF6FF; border: 1px solid #BFDBFE; color: #1E3A8A; }
+.ib-success { background: var(--green-bg); border: 1px solid #A7F3D0; color: #14532D; }
+.ib-warn    { background: #FFFBEB; border: 1px solid #FDE68A; color: #78350F; }
+.ib-error   { background: #FEF2F2; border: 1px solid #FECACA; color: #7F1D1D; }
+
+/* divider */
+.divider {
+  display: flex; align-items: center; gap: 10px;
+  color: var(--muted-l); font-size: 0.75rem; margin: 14px 0;
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+/* ════════════════════════════════════
+   SCREEN 1 — WELCOME / LOGIN
+════════════════════════════════════ */
+.welcome-banner {
+  background: linear-gradient(135deg, var(--navy) 0%, var(--navy-3) 100%);
+  border-radius: var(--r) var(--r) 0 0; padding: 30px 24px;
+  text-align: center; position: relative; overflow: hidden;
+}
+.welcome-banner::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 50% -20%, rgba(255,107,0,0.15) 0%, transparent 70%);
+}
+.wb-emblem {
+  width: 64px; height: 64px; border-radius: 50%; margin: 0 auto 14px;
+  background: conic-gradient(var(--saffron) 0 120deg, #fff 120deg 240deg, var(--green) 240deg 360deg);
+  display: flex; align-items: center; justify-content: center; position: relative;
+  box-shadow: 0 8px 28px rgba(0,0,0,0.35);
+}
+.wb-emblem::after {
+  content: '🏛️'; font-size: 1.3rem; position: absolute;
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--navy); display: flex; align-items: center; justify-content: center;
+}
+.wb-dev  { font-family: var(--fd); font-size: 0.82rem; color: #99AACC; margin-bottom: 3px; position: relative; z-index: 1; }
+.wb-title { font-family: var(--fh); font-size: 1.35rem; font-weight: 800; color: #fff; position: relative; z-index: 1; }
+.wb-sub  { font-size: 0.76rem; color: #6677AA; margin-top: 5px; position: relative; z-index: 1; }
+.wb-chips {
+  display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; position: relative; z-index: 1;
+}
+.wb-chip {
+  font-family: var(--fm); font-size: 0.58rem; letter-spacing: 0.08em;
+  padding: 4px 10px; border-radius: 20px;
+  border: 1px solid rgba(255,107,0,0.3); color: var(--saffron-l); background: rgba(255,107,0,0.08);
+}
+.wb-chip.g { border-color: rgba(15,122,64,0.35); color: #5DE0A0; background: rgba(15,122,64,0.1); }
+
+/* ════════════════════════════════════
+   OTP BOXES
+════════════════════════════════════ */
+.otp-wrap { display: flex; gap: 8px; justify-content: center; }
+.otp-box {
+  width: 48px; height: 56px;
+  text-align: center; font-size: 1.35rem; font-weight: 700;
+  font-family: var(--fm); border: 2px solid var(--border);
+  border-radius: var(--r-sm); transition: all 0.2s; caret-color: var(--saffron);
+}
+.otp-box:focus  { border-color: var(--saffron); box-shadow: 0 0 0 3px var(--saffron-glow); }
+.otp-box.filled { border-color: var(--green); background: var(--green-bg); color: var(--success); }
+
+/* ════════════════════════════════════
+   BIOMETRIC SCANNER
+════════════════════════════════════ */
+.bio-wrap { text-align: center; margin: 6px 0 18px; }
+.bio-scanner {
+  width: 110px; height: 110px; margin: 0 auto 10px;
+  border: 3px solid var(--border); border-radius: 16px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 3rem; position: relative; overflow: hidden;
+  background: var(--off); transition: border-color 0.3s;
+}
+.bio-scanner.scanning { border-color: var(--saffron); background: var(--saffron-bg); }
+.bio-scanner.ok       { border-color: var(--green); background: var(--green-bg); }
+.scan-beam {
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--saffron), transparent);
+  opacity: 0; animation: none;
+}
+.scan-beam.go { opacity: 1; animation: beam 1.8s ease-in-out 1.2; }
+@keyframes beam { 0%{top:0%} 100%{top:100%} }
+.bio-txt { font-family: var(--fm); font-size: 0.7rem; }
+
+/* ════════════════════════════════════
+   VOTER ID CARD
+════════════════════════════════════ */
+.voter-card {
+  background: linear-gradient(135deg, #1B3A7A 0%, #0A1B3E 100%);
+  border-radius: 10px; padding: 18px; margin: 14px 0;
+  border: 1px solid rgba(255,255,255,0.08); position: relative; overflow: hidden;
+}
+.voter-card::before { content: '🏛️'; position: absolute; right: 12px; top: 8px; font-size: 3rem; opacity: 0.05; }
+.vc-header { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+.vc-flag { display: flex; flex-direction: column; width: 20px; height: 13px; border-radius: 2px; overflow: hidden; flex-shrink: 0; }
+.vc-flag div { flex: 1; }
+.vc-label { font-family: var(--fd); font-size: 0.6rem; color: rgba(255,255,255,0.65); line-height: 1.3; }
+.vc-label strong { font-family: var(--fb); font-size: 0.58rem; color: rgba(255,255,255,0.9); display: block; }
+.vc-body { display: flex; gap: 12px; }
+.vc-photo { width: 56px; height: 68px; border-radius: 6px; background: rgba(255,255,255,0.1); border: 2px solid rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center; font-size: 2rem; flex-shrink: 0; }
+.vc-info { flex: 1; }
+.vc-name { font-family: var(--fh); font-size: 1rem; font-weight: 700; color: #fff; margin-bottom: 6px; }
+.vc-row  { margin-bottom: 4px; }
+.vc-lbl  { font-size: 0.58rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.07em; }
+.vc-val  { font-size: 0.78rem; color: rgba(255,255,255,0.9); }
+.vc-epic { margin-top: 10px; padding-top: 8px; border-top: 1px solid rgba(255,255,255,0.1); }
+.vc-epic-l { font-size: 0.58rem; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.07em; }
+.vc-epic-n { font-family: var(--fm); font-size: 0.85rem; color: var(--saffron-l); letter-spacing: 0.1em; }
+
+/* ════════════════════════════════════
+   BALLOT
+════════════════════════════════════ */
+.ballot-top {
+  background: linear-gradient(135deg, var(--navy), var(--navy-3));
+  padding: 18px 20px; border-radius: var(--r) var(--r) 0 0;
+}
+.const-chip {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(255,107,0,0.15); border: 1px solid rgba(255,107,0,0.3);
+  padding: 4px 10px; border-radius: 20px; margin-bottom: 8px;
+}
+.const-chip span { font-family: var(--fm); font-size: 0.58rem; color: var(--saffron-l); letter-spacing: 0.08em; text-transform: uppercase; }
+.const-chip .cd { width: 5px; height: 5px; border-radius: 50%; background: var(--saffron-l); }
+.ballot-title { font-family: var(--fh); font-size: 1.1rem; font-weight: 700; color: #fff; }
+.ballot-meta  { font-size: 0.72rem; color: #6677AA; margin-top: 3px; }
+
+.candidate-list { padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+.cand {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; border: 2px solid var(--border);
+  border-radius: var(--r-sm); cursor: pointer;
+  transition: all 0.2s; position: relative;
+  min-height: 72px; /* big touch target */
+}
+.cand:hover  { border-color: rgba(255,107,0,0.4); background: var(--saffron-bg); }
+.cand.picked { border-color: var(--saffron); background: var(--saffron-bg); }
+.cand.picked::after {
+  content: '✓'; position: absolute; top: -9px; right: -9px;
+  width: 20px; height: 20px; border-radius: 50%;
+  background: var(--saffron); color: #fff;
+  font-size: 0.65rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+}
+.cand-sym { width: 48px; height: 48px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; border: 1px solid var(--border); }
+.cand-info { flex: 1; min-width: 0; }
+.cand-name  { font-family: var(--fh); font-size: 0.95rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cand-party { font-size: 0.72rem; color: var(--muted); margin: 2px 0; }
+.cand-badge {
+  display: inline-block; font-family: var(--fm); font-size: 0.56rem;
+  padding: 2px 7px; border-radius: 3px; letter-spacing: 0.05em;
+}
+.cand-num { font-family: var(--fm); font-size: 0.68rem; color: var(--muted-l); flex-shrink: 0; }
+
+.nota-row {
+  display: flex; align-items: center; gap: 12px; padding: 12px 14px;
+  border: 2px dashed var(--border); border-radius: var(--r-sm);
+  cursor: pointer; transition: all 0.2s; min-height: 60px;
+}
+.nota-row:hover  { border-color: var(--muted); }
+.nota-row.picked { border-color: var(--text); background: var(--off); }
+.nota-ico  { font-size: 1.3rem; }
+.nota-text { font-size: 0.85rem; font-weight: 600; }
+.nota-sub  { font-size: 0.7rem; color: var(--muted); }
+
+/* ════════════════════════════════════
+   CONFIRM
+════════════════════════════════════ */
+.confirm-box {
+  display: flex; gap: 12px; align-items: center;
+  padding: 16px; background: var(--saffron-bg);
+  border: 2px solid rgba(255,107,0,0.3); border-radius: var(--r-sm); margin-bottom: 16px;
+}
+.confirm-sym { width: 52px; height: 52px; border-radius: 8px; background: #fff; display: flex; align-items: center; justify-content: center; font-size: 1.7rem; border: 1px solid rgba(255,107,0,0.2); flex-shrink: 0; }
+.confirm-name  { font-family: var(--fh); font-size: 1rem; font-weight: 700; }
+.confirm-party { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+
+.voter-summary {
+  background: var(--off); border: 1px solid var(--border); border-radius: var(--r-sm);
+  padding: 14px; margin-bottom: 14px;
+}
+.vs-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--border); font-size: 0.82rem; }
+.vs-row:last-child { border-bottom: none; }
+.vs-lbl { color: var(--muted); }
+.vs-val { font-weight: 600; max-width: 60%; text-align: right; }
+.vs-val.mono { font-family: var(--fm); font-size: 0.72rem; }
+
+.pledge-box {
+  display: flex; gap: 10px; padding: 12px 14px;
+  border: 1px solid var(--border); border-radius: var(--r-sm);
+  background: var(--off); cursor: pointer; margin-bottom: 14px; align-items: flex-start;
+}
+.pledge-box input { margin-top: 2px; accent-color: var(--saffron); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+.pledge-box span { font-size: 0.78rem; line-height: 1.55; }
+
+/* ════════════════════════════════════
+   BLOCKCHAIN PROCESSING
+════════════════════════════════════ */
+.process-screen { padding: 36px 24px; text-align: center; }
+.proc-title { font-family: var(--fh); font-size: 1.4rem; font-weight: 700; color: var(--navy); }
+.proc-sub   { font-size: 0.82rem; color: var(--muted); margin-top: 5px; }
+
+.chain-row {
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap;
+  gap: 4px; margin: 24px 0 16px;
+}
+.chain-blk {
+  width: 52px; height: 52px; border-radius: 8px;
+  background: var(--navy-2); border: 2px solid rgba(255,107,0,0.2);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: var(--fm); font-size: 0.44rem; color: rgba(255,107,0,0.4);
+  line-height: 1.4; transition: all 0.3s; text-transform: uppercase; letter-spacing: 0.05em;
+}
+.chain-blk.glow { border-color: var(--saffron); color: var(--saffron-l); box-shadow: 0 0 16px var(--saffron-glow); animation: blkPop 0.5s ease; }
+.chain-blk.confirmed { border-color: var(--green); color: var(--green-l); background: rgba(15,122,64,0.08); }
+@keyframes blkPop { 0%{transform:scale(1)} 40%{transform:scale(1.14)} 100%{transform:scale(1)} }
+.chain-link-ic { font-size: 0.8rem; color: var(--muted-l); }
+
+.proc-status-txt { font-family: var(--fm); font-size: 0.75rem; color: var(--muted); min-height: 18px; }
+.proc-log {
+  background: var(--navy); border-radius: 8px; padding: 14px;
+  text-align: left; max-height: 110px; overflow-y: auto; margin-top: 14px;
+}
+.log-entry { display: flex; gap: 8px; font-family: var(--fm); font-size: 0.62rem; line-height: 1.9; }
+.log-ts  { color: #2A4070; }
+.log-msg { color: var(--green-l); }
+.log-msg.warn { color: var(--saffron-l); }
+
+/* ════════════════════════════════════
+   RECEIPT / SUCCESS
+════════════════════════════════════ */
+.receipt-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--r); box-shadow: var(--shadow-lg); overflow: hidden; }
+.receipt-head {
+  background: linear-gradient(135deg, var(--green) 0%, var(--green-l) 100%);
+  padding: 28px 24px; text-align: center;
+}
+.success-ring {
+  width: 72px; height: 72px; border-radius: 50%; margin: 0 auto 12px;
+  background: rgba(255,255,255,0.2); border: 3px solid rgba(255,255,255,0.4);
+  display: flex; align-items: center; justify-content: center; font-size: 2.2rem;
+}
+.receipt-title { font-family: var(--fh); font-size: 1.3rem; font-weight: 800; color: #fff; }
+.receipt-sub   { font-size: 0.78rem; color: rgba(255,255,255,0.75); margin-top: 5px; }
+
+.receipt-body { padding: 20px 24px; }
+.rx-section-title { font-family: var(--fm); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); margin-bottom: 10px; margin-top: 16px; }
+.rx-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 9px 0; border-bottom: 1px solid var(--border); font-size: 0.8rem; gap: 8px; }
+.rx-row:last-child { border-bottom: none; }
+.rx-lbl { color: var(--muted); flex-shrink: 0; }
+.rx-val { font-weight: 600; text-align: right; word-break: break-all; max-width: 62%; }
+.rx-val.mono  { font-family: var(--fm); font-size: 0.66rem; }
+.rx-val.green { color: var(--success); }
+.rx-val.blue  { color: var(--saffron); }
+
+.tx-badge {
+  display: flex; gap: 10px; align-items: center;
+  background: var(--navy); border-radius: 8px; padding: 12px 14px; margin: 12px 0;
+}
+.tx-icon { font-size: 1.3rem; }
+.tx-lbl  { font-family: var(--fm); font-size: 0.56rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted-l); }
+.tx-hash { font-family: var(--fm); font-size: 0.65rem; color: var(--green-l); word-break: break-all; }
+
+/* ════════════════════════════════════
+   MOBILE BOTTOM NAV
+════════════════════════════════════ */
+.mobile-nav {
+  display: none;
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: var(--white); border-top: 1px solid var(--border);
+  padding: 8px 20px 12px;
+  box-shadow: 0 -4px 20px rgba(6,18,43,0.1);
+}
+.mobile-nav-inner { display: flex; justify-content: space-around; }
+.mn-item {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  font-size: 0.58rem; color: var(--muted-l); cursor: pointer;
+  padding: 4px 12px; border-radius: 8px; transition: all 0.2s; border: none; background: none;
+}
+.mn-item .mn-ic { font-size: 1.2rem; }
+.mn-item.active { color: var(--saffron); background: var(--saffron-bg); }
+
+/* ════════════════════════════════════
+   CONFETTI
+════════════════════════════════════ */
+#confetti-layer { position: fixed; inset: 0; pointer-events: none; z-index: 999; }
+.conf-pc {
+  position: absolute; width: 8px; height: 8px;
+  animation: confFall linear forwards;
+}
+@keyframes confFall {
+  from { transform: translateY(-10px) rotate(0deg); opacity: 1; }
+  to   { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+}
+
+/* ════════════════════════════════════
+   SCROLL PROGRESS
+════════════════════════════════════ */
+.scroll-prog {
+  position: fixed; top: var(--header-h); left: 0; height: 3px; z-index: 400;
+  background: var(--saffron); width: 0; transition: width 0.1s;
+}
+
+/* ════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+════════════════════════════════════ */
+
+/* ── TABLET (≤ 900px) ── */
+@media (max-width: 900px) {
+  .page-shell {
+    grid-template-columns: 1fr;
+    padding-top: 16px;
+  }
+  .sidebar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .widget { padding: 12px; }
+  .hb-time { display: none; }
+}
+
+/* ── MOBILE (≤ 600px) ── */
+@media (max-width: 600px) {
+  :root { --header-h: 56px; }
+
+  .hb-live { display: none; }
+  .hb-eng  { font-size: 0.76rem; }
+  .hb-dev  { display: none; }
+
+  .page-shell { padding: 12px 12px 80px; gap: 12px; }
+
+  .sidebar { grid-template-columns: 1fr 1fr; }
+  .widget:last-child { display: none; } /* hide helpline on mobile */
+
+  .card-head { padding: 18px 16px; }
+  .card-body { padding: 16px; }
+  .ch-title  { font-size: 1.1rem; }
+
+  .welcome-banner { padding: 24px 16px; }
+  .wb-title { font-size: 1.15rem; }
+
+  .row-3 { grid-template-columns: 72px 72px 1fr; gap: 6px; }
+  .otp-box { width: 42px; height: 50px; font-size: 1.2rem; }
+  .otp-wrap { gap: 6px; }
+
+  .step-bar { padding: 12px 10px; }
+  .step-lbl { display: none; } /* hide labels on tiny screens */
+  .step-line { min-width: 12px; }
+
+  .cand { min-height: 64px; padding: 11px 12px; gap: 10px; }
+  .cand-sym { width: 42px; height: 42px; font-size: 1.3rem; }
+  .cand-name { font-size: 0.88rem; }
+
+  .chain-blk { width: 44px; height: 44px; font-size: 0.4rem; }
+
+  .voter-card { padding: 14px; }
+  .vc-photo { width: 50px; height: 60px; }
+  .vc-name  { font-size: 0.9rem; }
+
+  .mobile-nav { display: block; }
+  .sidebar { display: none; } /* sidebar hidden on small mobile, accessible via nav */
+
+  .receipt-body { padding: 16px; }
+  .btn { min-height: 52px; font-size: 0.92rem; }
+}
+
+/* ── VERY SMALL (≤ 380px) ── */
+@media (max-width: 380px) {
+  .otp-box { width: 36px; height: 44px; font-size: 1.1rem; }
+  .otp-wrap { gap: 5px; }
+  .chain-row { gap: 3px; }
+  .chain-blk { width: 38px; height: 38px; }
+}
+
+/* ════════════════════════════════════
+   DESKTOP ENHANCEMENTS (≥ 901px)
+════════════════════════════════════ */
+@media (min-width: 901px) {
+  .btn-row { flex-direction: row; }
+  .btn-row .btn { flex: 1; }
+  .hb-eng { font-size: 0.9rem; }
+}
+
+/* ════════════════════════════════════
+   PRINT STYLES
+════════════════════════════════════ */
+@media print {
+  .top-header, .sidebar, .mobile-nav, .scroll-prog, .btn { display: none !important; }
+  .page-shell { grid-template-columns: 1fr; padding: 0; }
+  .receipt-card { box-shadow: none; border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+
+<div id="confetti-layer"></div>
+<div class="scroll-prog" id="scrollProg"></div>
+
+<!-- ════════ HEADER ════════ -->
+<header class="top-header">
+  <div class="flag-bar"><div class="fb-o"></div><div class="fb-w"></div><div class="fb-g"></div></div>
+  <div class="header-body">
+    <a class="hb-brand" href="#">
+      <div class="hb-wheel"></div>
+      <div class="hb-titles">
+        <div class="hb-dev">भारत निर्वाचन आयोग</div>
+        <div class="hb-eng">Election Commission of India — Online Voting</div>
+      </div>
+    </a>
+    <div class="hb-right">
+      <div class="hb-live"><div class="live-dot"></div>BLOCKCHAIN LIVE</div>
+      <div class="hb-time" id="hTime"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ════════ PAGE SHELL ════════ -->
+<div class="page-shell">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="widget">
+      <div class="widget-title">Live Statistics</div>
+      <div class="stat-row">
+        <div class="stat-num" id="voteCount">0</div>
+        <div class="stat-lbl">Votes Cast Today</div>
+        <div class="stat-bar"><div class="stat-fill fill-o" id="voteBar" style="width:0%"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-num">68.4%</div>
+        <div class="stat-lbl">National Turnout</div>
+        <div class="stat-bar"><div class="stat-fill fill-g" style="width:68.4%"></div></div>
+      </div>
+      <div class="stat-row">
+        <div class="stat-num" id="blockCount">0</div>
+        <div class="stat-lbl">Blocks Confirmed</div>
+      </div>
+    </div>
+    <div class="widget">
+      <div class="widget-title">Security Status</div>
+      <div class="sec-row"><span class="ic">🪪</span>Aadhaar API<span class="sec-ok">● LIVE</span></div>
+      <div class="sec-row"><span class="ic">🏛️</span>EC Database<span class="sec-ok">● SYNC</span></div>
+      <div class="sec-row"><span class="ic">⛓️</span>Blockchain<span class="sec-ok">● ON</span></div>
+      <div class="sec-row"><span class="ic">🤖</span>AI Monitor<span class="sec-ok">● RUN</span></div>
+      <div class="sec-row"><span class="ic">🔒</span>SSL/TLS 1.3<span class="sec-ok">● OK</span></div>
+    </div>
+    <div class="widget">
+      <div class="widget-title">Voter Helpline</div>
+      <div style="font-family:var(--fh);font-size:1.4rem;font-weight:700;color:var(--saffron);">1950</div>
+      <div style="font-size:0.7rem;color:var(--muted);">Toll-Free 24×7</div>
+      <div style="font-size:0.7rem;color:var(--muted);margin-top:8px;">📧 help@eci.gov.in</div>
+    </div>
+  </aside>
+
+  <!-- ── SCREENS ── -->
+  <main class="main-col">
+
+    <!-- ══ S1: WELCOME / LOGIN ══ -->
+    <div class="screen active" id="s1">
+      <div class="card">
+        <div class="welcome-banner">
+          <div class="wb-emblem"></div>
+          <div class="wb-dev">भारतीय ऑनलाइन मतदान प्रणाली · 2024</div>
+          <div class="wb-title">Online Voting Portal</div>
+          <div class="wb-sub">Blockchain-secured · Aadhaar-verified · EC Database connected</div>
+          <div class="wb-chips">
+            <span class="wb-chip">🔐 AES-256 Encrypted</span>
+            <span class="wb-chip">⛓ Blockchain Immutable</span>
+            <span class="wb-chip g">✅ EC Verified</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="info-box ib-info">
+            <span class="ic">ℹ️</span>
+            <div>Vote securely from home. Your vote is encrypted and stored on India's national blockchain, directly connected to the Election Commission database.</div>
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <div class="form-label">State <span class="req">*</span></div>
+              <select id="selState">
+                <option value="">Select State</option>
+                <option>Andhra Pradesh</option><option>Assam</option><option>Bihar</option>
+                <option>Chhattisgarh</option><option>Delhi</option><option>Goa</option>
+                <option>Gujarat</option><option>Haryana</option><option>Himachal Pradesh</option>
+                <option>Jharkhand</option><option selected>Karnataka</option><option>Kerala</option>
+                <option>Madhya Pradesh</option><option>Maharashtra</option><option>Odisha</option>
+                <option>Punjab</option><option>Rajasthan</option><option>Tamil Nadu</option>
+                <option>Telangana</option><option>Uttar Pradesh</option><option>Uttarakhand</option>
+                <option>West Bengal</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <div class="form-label">Election <span class="req">*</span></div>
+              <select id="selElection">
+                <option value="">Select Election</option>
+                <option selected>Lok Sabha 2024</option>
+                <option>State Assembly 2024</option>
+                <option>Municipal Election</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="divider">Identity Verification</div>
+
+          <div class="form-group">
+            <div class="form-label">Aadhaar Number <span class="req">*</span> <span class="hint">(12 digits)</span></div>
+            <input type="tel" id="inpAadhaar" placeholder="XXXX  XXXX  XXXX" maxlength="14" oninput="fmtAadhaar(this)">
+          </div>
+
+          <div class="row-2">
+            <div class="form-group">
+              <div class="form-label">Voter ID (EPIC) <span class="req">*</span></div>
+              <input type="text" id="inpEPIC" placeholder="KA/12/345/678901" oninput="this.value=this.value.toUpperCase()">
+            </div>
+            <div class="form-group">
+              <div class="form-label">Mobile <span class="req">*</span></div>
+              <input type="tel" id="inpMobile" placeholder="+91 XXXXXXXXXX" maxlength="13">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <div class="form-label">Date of Birth <span class="req">*</span></div>
+            <div class="row-3">
+              <input type="number" id="inpDD" placeholder="DD" min="1" max="31">
+              <input type="number" id="inpMM" placeholder="MM" min="1" max="12">
+              <input type="number" id="inpYY" placeholder="YYYY" min="1900" max="2006">
+            </div>
+          </div>
+
+          <button class="btn btn-primary" onclick="doLogin()">
+            🔐 Verify with Aadhaar & Get OTP
+          </button>
+          <p style="text-align:center;font-size:0.7rem;color:var(--muted);margin-top:10px;">
+            🔒 256-bit SSL · Session encrypted · Zero data stored after voting
+          </p>
+        </div>
+      </div>
+    </div><!-- /s1 -->
+
+    <!-- ══ S2: OTP ══ -->
+    <div class="screen" id="s2">
+      <div class="step-bar" id="stepBar2"></div>
+      <div class="card">
+        <div class="card-head">
+          <div class="ch-tag">Step 2 of 5 · OTP Verification</div>
+          <div class="ch-title">Verify Your Mobile</div>
+          <div class="ch-sub">OTP sent to Aadhaar-linked number ending in <strong id="mMob">XXXX</strong></div>
+        </div>
+        <div class="card-body">
+          <div class="info-box ib-success">
+            <span class="ic">✅</span>
+            <div>Aadhaar <strong id="mAadhaar">XXXX XXXX XXXX</strong> verified with UIDAI successfully.</div>
+          </div>
+
+          <div class="form-group" style="text-align:center;">
+            <div class="form-label" style="justify-content:center;margin-bottom:14px;">Enter 6-digit OTP</div>
+            <div class="otp-wrap">
+              <input class="otp-box" type="tel" maxlength="1" id="o0" oninput="otpKey(this,0)" onkeydown="otpBack(event,0)">
+              <input class="otp-box" type="tel" maxlength="1" id="o1" oninput="otpKey(this,1)" onkeydown="otpBack(event,1)">
+              <input class="otp-box" type="tel" maxlength="1" id="o2" oninput="otpKey(this,2)" onkeydown="otpBack(event,2)">
+              <input class="otp-box" type="tel" maxlength="1" id="o3" oninput="otpKey(this,3)" onkeydown="otpBack(event,3)">
+              <input class="otp-box" type="tel" maxlength="1" id="o4" oninput="otpKey(this,4)" onkeydown="otpBack(event,4)">
+              <input class="otp-box" type="tel" maxlength="1" id="o5" oninput="otpKey(this,5)" onkeydown="otpBack(event,5)">
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:12px;align-items:center;">
+              <span style="font-family:var(--fm);font-size:0.7rem;color:var(--muted);">Resend in <span id="otpTimer" style="color:var(--saffron);font-weight:600;">02:00</span></span>
+              <button class="btn-link" id="resendBtn" disabled onclick="resendOTP()">Resend OTP</button>
+            </div>
+          </div>
+
+          <div class="info-box ib-warn">
+            <span class="ic">💡</span>
+            <div><strong>Demo Mode:</strong> Enter OTP <strong style="font-family:var(--fm);color:var(--saffron);">1 2 3 4 5 6</strong> to continue.</div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goTo(1)">← Back</button>
+            <button class="btn btn-primary" id="btnVerifyOTP" onclick="verifyOTP()" disabled>Verify OTP →</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /s2 -->
+
+    <!-- ══ S3: BIOMETRIC + VOTER ID ══ -->
+    <div class="screen" id="s3">
+      <div class="step-bar" id="stepBar3"></div>
+      <div class="card">
+        <div class="card-head">
+          <div class="ch-tag">Step 3 of 5 · Biometric Verification</div>
+          <div class="ch-title">Identity Confirmed</div>
+          <div class="ch-sub">Biometric matched & EC database verified</div>
+        </div>
+        <div class="card-body">
+          <div class="bio-wrap">
+            <div class="bio-scanner" id="bioBox">
+              <span id="bioEmoji">👆</span>
+              <div class="scan-beam" id="scanBeam"></div>
+            </div>
+            <div class="bio-txt" id="bioTxt" style="color:var(--saffron);">Scanning biometric…</div>
+          </div>
+
+          <div class="voter-card">
+            <div class="vc-header">
+              <div class="vc-flag"><div style="background:var(--saffron)"></div><div style="background:#fff"></div><div style="background:var(--green)"></div></div>
+              <div class="vc-label">भारत निर्वाचन आयोग <strong>ELECTION COMMISSION OF INDIA</strong></div>
+            </div>
+            <div class="vc-body">
+              <div class="vc-photo">👤</div>
+              <div class="vc-info">
+                <div class="vc-name">ARIF MOHAMMAD</div>
+                <div class="vc-row"><div class="vc-lbl">Father's Name</div><div class="vc-val">MOHAMMAD ALI</div></div>
+                <div class="vc-row"><div class="vc-lbl">Date of Birth</div><div class="vc-val">15 / 08 / 1990</div></div>
+                <div class="vc-row"><div class="vc-lbl">Constituency</div><div class="vc-val">Bangalore South · PC-28</div></div>
+              </div>
+            </div>
+            <div class="vc-epic">
+              <div class="vc-epic-l">EPIC Number</div>
+              <div class="vc-epic-n">KA / 12 / 345 / 678901</div>
+            </div>
+          </div>
+
+          <div class="info-box ib-success">
+            <span class="ic">✅</span>
+            <div><strong>EC Database Verified</strong> · Serial No. 4521 · Booth No. 042 · Bangalore South PC<br>
+            <span style="font-family:var(--fm);font-size:0.68rem;">Status: HAS NOT VOTED — Eligible ✓</span></div>
+          </div>
+          <div class="info-box ib-warn">
+            <span class="ic">⚠️</span>
+            <div>You are casting your vote for <strong>Lok Sabha General Election 2024</strong>, Bangalore South. This action is <strong>irreversible</strong>.</div>
+          </div>
+
+          <button class="btn btn-primary" id="btnToBallot" onclick="goTo(4)" disabled>Proceed to Ballot →</button>
+        </div>
+      </div>
+    </div><!-- /s3 -->
+
+    <!-- ══ S4: BALLOT ══ -->
+    <div class="screen" id="s4">
+      <div class="step-bar" id="stepBar4"></div>
+      <div class="card">
+        <div class="ballot-top">
+          <div class="const-chip"><div class="cd"></div><span>Bangalore South · PC No. 28 · Karnataka</span></div>
+          <div class="ballot-title">🗳️ Lok Sabha General Election 2024</div>
+          <div class="ballot-meta">Ballot ID: LS/KA/28/2024 · Official EC Ballot</div>
+        </div>
+
+        <div style="padding:14px 16px 6px;">
+          <div class="info-box ib-info" style="margin-bottom:0;">
+            <span class="ic">ℹ️</span>
+            <div>Select <strong>ONE candidate</strong>. Your vote is encrypted immediately on selection.</div>
+          </div>
+        </div>
+
+        <div class="candidate-list">
+          <div class="cand" onclick="pickCand(this,'Tejasvi Surya','Bharatiya Janata Party','🌸','BJP · No. 1','1')">
+            <div class="cand-sym" style="background:#FFF0F0;">🌸</div>
+            <div class="cand-info">
+              <div class="cand-name">Tejasvi Surya</div>
+              <div class="cand-party">Bharatiya Janata Party</div>
+              <span class="cand-badge" style="background:#FFF0F0;color:#B91C1C;">BJP · No. 1</span>
+            </div>
+            <div class="cand-num">#1</div>
+          </div>
+
+          <div class="cand" onclick="pickCand(this,'Sowmya Reddy','Indian National Congress','✋','INC · No. 2','2')">
+            <div class="cand-sym" style="background:#FFF8EE;">✋</div>
+            <div class="cand-info">
+              <div class="cand-name">Sowmya Reddy</div>
+              <div class="cand-party">Indian National Congress</div>
+              <span class="cand-badge" style="background:#FFF8EE;color:#92400E;">INC · No. 2</span>
+            </div>
+            <div class="cand-num">#2</div>
+          </div>
+
+          <div class="cand" onclick="pickCand(this,'N. A. Haris','Janata Dal (Secular)','🌾','JD(S) · No. 3','3')">
+            <div class="cand-sym" style="background:#F0FFF4;">🌾</div>
+            <div class="cand-info">
+              <div class="cand-name">N. A. Haris</div>
+              <div class="cand-party">Janata Dal (Secular)</div>
+              <span class="cand-badge" style="background:#F0FFF4;color:#14532D;">JD(S) · No. 3</span>
+            </div>
+            <div class="cand-num">#3</div>
+          </div>
+
+          <div class="cand" onclick="pickCand(this,'Abdul Raheem','Bahujan Samaj Party','🐘','BSP · No. 4','4')">
+            <div class="cand-sym" style="background:#F5F0FF;">🐘</div>
+            <div class="cand-info">
+              <div class="cand-name">Abdul Raheem</div>
+              <div class="cand-party">Bahujan Samaj Party</div>
+              <span class="cand-badge" style="background:#F5F0FF;color:#5B21B6;">BSP · No. 4</span>
+            </div>
+            <div class="cand-num">#4</div>
+          </div>
+
+          <div class="cand" onclick="pickCand(this,'Priya Nair','Aam Aadmi Party','🧹','AAP · No. 5','5')">
+            <div class="cand-sym" style="background:#EFF6FF;">🧹</div>
+            <div class="cand-info">
+              <div class="cand-name">Priya Nair</div>
+              <div class="cand-party">Aam Aadmi Party</div>
+              <span class="cand-badge" style="background:#EFF6FF;color:#1E40AF;">AAP · No. 5</span>
+            </div>
+            <div class="cand-num">#5</div>
+          </div>
+
+          <div class="nota-row" onclick="pickNOTA(this)">
+            <span class="nota-ico">🚫</span>
+            <div>
+              <div class="nota-text">NOTA — None of the Above</div>
+              <div class="nota-sub">Supreme Court guaranteed right to reject all candidates</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="padding:0 16px 16px;">
+          <button class="btn btn-primary" id="btnToConfirm" onclick="goTo(5)" disabled>Review & Confirm →</button>
+        </div>
+      </div>
+    </div><!-- /s4 -->
+
+    <!-- ══ S5: CONFIRM ══ -->
+    <div class="screen" id="s5">
+      <div class="step-bar" id="stepBar5"></div>
+      <div class="card">
+        <div class="card-head">
+          <div class="ch-tag">Step 5 of 5 · Confirm Your Vote</div>
+          <div class="ch-title">Final Review</div>
+          <div class="ch-sub">Review carefully — submission is <strong style="color:#FFB877;">permanent and irreversible</strong></div>
+        </div>
+        <div class="card-body">
+          <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:8px;">Your Selection</div>
+          <div class="confirm-box">
+            <div class="confirm-sym" id="cSym">🌸</div>
+            <div>
+              <div class="confirm-name" id="cName">Tejasvi Surya</div>
+              <div class="confirm-party" id="cParty">Bharatiya Janata Party · Candidate No. 1</div>
+            </div>
+          </div>
+
+          <div style="font-size:0.72rem;font-weight:600;text-transform:uppercase;letter-spacing:0.07em;color:var(--muted);margin-bottom:8px;">Voter Details</div>
+          <div class="voter-summary">
+            <div class="vs-row"><span class="vs-lbl">Name</span><span class="vs-val">Arif Mohammad</span></div>
+            <div class="vs-row"><span class="vs-lbl">EPIC No.</span><span class="vs-val mono">KA/12/345/678901</span></div>
+            <div class="vs-row"><span class="vs-lbl">Constituency</span><span class="vs-val">Bangalore South (PC-28)</span></div>
+            <div class="vs-row"><span class="vs-lbl">Election</span><span class="vs-val">Lok Sabha 2024</span></div>
+          </div>
+
+          <label class="pledge-box">
+            <input type="checkbox" id="pledgeCheck" onchange="toggleSubmit()">
+            <span>I, <strong>Arif Mohammad</strong>, confirm this vote is cast freely and without coercion. I understand submitting a false vote is a criminal offence under the Representation of the People Act, 1951.</span>
+          </label>
+
+          <div class="info-box ib-warn">
+            <span class="ic">🔐</span>
+            <div>Submitting will <strong>AES-256 encrypt</strong> your vote and write it immutably to the EC blockchain. Zero Knowledge Proof ensures nobody — including the EC — can see your candidate choice.</div>
+          </div>
+
+          <div class="btn-row">
+            <button class="btn btn-ghost" onclick="goTo(4)">← Change</button>
+            <button class="btn btn-green" id="btnSubmit" onclick="submitVote()" disabled>✅ Submit to Blockchain</button>
+          </div>
+        </div>
+      </div>
+    </div><!-- /s5 -->
+
+    <!-- ══ S6: BLOCKCHAIN PROCESSING ══ -->
+    <div class="screen" id="s6">
+      <div class="card">
+        <div class="process-screen">
+          <div class="proc-title">Recording Your Vote</div>
+          <div class="proc-sub">Connecting to EC Blockchain Network…</div>
+
+          <div class="chain-row">
+            <div class="chain-blk" id="blk1">PREV<br>BLOCK</div>
+            <div class="chain-link-ic">⛓</div>
+            <div class="chain-blk" id="blk2">ENCRYPT<br>VOTE</div>
+            <div class="chain-link-ic">⛓</div>
+            <div class="chain-blk" id="blk3">MINE<br>BLOCK</div>
+            <div class="chain-link-ic">⛓</div>
+            <div class="chain-blk" id="blk4">EC DB<br>SYNC</div>
+            <div class="chain-link-ic">⛓</div>
+            <div class="chain-blk" id="blk5">ISSUE<br>RECEIPT</div>
+          </div>
+
+          <div class="proc-status-txt" id="procTxt">Initialising secure session…</div>
+          <div class="proc-log" id="procLog"></div>
+        </div>
+      </div>
+    </div><!-- /s6 -->
+
+    <!-- ══ S7: SUCCESS / RECEIPT ══ -->
+    <div class="screen" id="s7">
+      <div class="receipt-card">
+        <div class="receipt-head">
+          <div class="success-ring">✅</div>
+          <div class="receipt-title">Vote Successfully Cast!</div>
+          <div class="receipt-sub">Recorded on Blockchain · Logged with Election Commission</div>
+        </div>
+        <div class="receipt-body">
+          <div class="tx-badge">
+            <div class="tx-icon">⛓️</div>
+            <div>
+              <div class="tx-lbl">Transaction Hash (Blockchain)</div>
+              <div class="tx-hash" id="rxTxHash">—</div>
+            </div>
+          </div>
+
+          <div class="rx-section-title">Vote Details</div>
+          <div class="rx-row"><span class="rx-lbl">Voter</span><span class="rx-val">Arif Mohammad</span></div>
+          <div class="rx-row"><span class="rx-lbl">EPIC No.</span><span class="rx-val mono">KA/12/345/678901</span></div>
+          <div class="rx-row"><span class="rx-lbl">Constituency</span><span class="rx-val">Bangalore South (PC-28)</span></div>
+          <div class="rx-row"><span class="rx-lbl">Election</span><span class="rx-val">Lok Sabha 2024</span></div>
+
+          <div class="rx-section-title">Blockchain Record</div>
+          <div class="rx-row"><span class="rx-lbl">Block No.</span><span class="rx-val mono" id="rxBlock">—</span></div>
+          <div class="rx-row"><span class="rx-lbl">Timestamp</span><span class="rx-val mono" id="rxTime">—</span></div>
+          <div class="rx-row"><span class="rx-lbl">Block Hash</span><span class="rx-val mono blue" id="rxBHash">—</span></div>
+          <div class="rx-row"><span class="rx-lbl">EC Confirmation</span><span class="rx-val green">✅ Logged & Verified</span></div>
+          <div class="rx-row"><span class="rx-lbl">Vote Status</span><span class="rx-val" style="color:var(--success);font-weight:700;">COUNTED</span></div>
+
+          <div class="info-box ib-success" style="margin-top:14px;">
+            <span class="ic">🔐</span>
+            <div>Your vote is <strong>100% anonymous</strong>. Zero Knowledge Proofs ensure even the EC cannot see which candidate you chose — only that your vote was counted.</div>
+          </div>
+
+          <div class="btn-row" style="margin-bottom:10px;">
+            <button class="btn btn-primary btn-sm" style="flex:1;min-height:48px;" onclick="window.print()">🖨️ Print Receipt</button>
+            <button class="btn btn-ghost btn-sm" style="flex:1;min-height:48px;" onclick="verifyChain()">🔍 Verify on Chain</button>
+          </div>
+
+          <p style="text-align:center;font-size:0.7rem;color:var(--muted);line-height:1.7;">
+            <strong>🇮🇳 जय हिन्द · Jai Hind</strong><br>
+            Thank you for participating in Indian Democracy<br>
+            Session closes in <span id="sesTimer" style="color:var(--saffron);font-family:var(--fm);font-weight:600;">60</span>s for security
+          </p>
+        </div>
+      </div>
+    </div><!-- /s7 -->
+
+  </main>
+</div><!-- /page-shell -->
+
+<!-- ════════ MOBILE BOTTOM NAV ════════ -->
+<nav class="mobile-nav">
+  <div class="mobile-nav-inner">
+    <button class="mn-item active" id="mn1" onclick="mobileNav(1)"><span class="mn-ic">🏠</span>Home</button>
+    <button class="mn-item" id="mn2" onclick="mobileNav(2)"><span class="mn-ic">🔐</span>Login</button>
+    <button class="mn-item" id="mn3" onclick="mobileNav(3)"><span class="mn-ic">📊</span>Stats</button>
+    <button class="mn-item" id="mn4" onclick="mobileNav(4)"><span class="mn-ic">❓</span>Help</button>
+  </div>
+</nav>
+
+<script>
+/* ════════════════════════════════════
+   STATE
+════════════════════════════════════ */
+let voteCount = 847291;
+let blkCount  = 1203847;
+let selected  = null; // { name, party, sym, badge, num }
+let sessionCountdown = 60;
+let sessionInterval  = null;
+let otpInterval      = null;
+let otpSecs          = 120;
+
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+window.addEventListener('load', () => {
+  tickClock();
+  setInterval(tickClock, 1000);
+  tickStats();
+  setInterval(tickStats, 3500);
+  window.addEventListener('scroll', onScroll, { passive: true });
+});
+
+function tickClock() {
+  const n = new Date();
+  const d = n.toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' });
+  const t = n.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  const el = document.getElementById('hTime');
+  if (el) el.innerHTML = `${d}<br>${t}`;
+}
+
+function tickStats() {
+  voteCount += Math.floor(Math.random() * 180 + 40);
+  blkCount  += Math.floor(Math.random() * 3 + 1);
+  countUp('voteCount', voteCount);
+  countUp('blockCount', blkCount);
+  const pct = Math.min((voteCount / 1500000) * 100, 100);
+  const bar = document.getElementById('voteBar');
+  if (bar) bar.style.width = pct + '%';
+}
+
+function countUp(id, target) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const from = parseInt(el.textContent.replace(/,/g, '')) || 0;
+  let f = 0;
+  const steps = 18;
+  const iv = setInterval(() => {
+    f++;
+    el.textContent = Math.floor(from + (target - from) * (f / steps)).toLocaleString('en-IN');
+    if (f >= steps) clearInterval(iv);
+  }, 25);
+}
+
+function onScroll() {
+  const prog = document.getElementById('scrollProg');
+  if (!prog) return;
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  prog.style.width = pct + '%';
+}
+
+/* ════════════════════════════════════
+   STEP PROGRESS
+════════════════════════════════════ */
+const STEPS = ['Login','OTP','ID Check','Ballot','Confirm'];
+function renderSteps(containerId, current) {
+  const el = document.getElementById(containerId);
+  if (!el) return;
+  let h = '';
+  STEPS.forEach((lbl, i) => {
+    const n = i + 1;
+    const cls = n < current ? 'done' : n === current ? 'current' : '';
+    const lcls = n === current ? 'current' : '';
+    h += `<div class="step-item">
+      <div class="step-circle ${cls}">${n < current ? '✓' : n}</div>
+      <div class="step-lbl ${lcls}">${lbl}</div>
+    </div>`;
+    if (i < STEPS.length - 1)
+      h += `<div class="step-line ${n < current ? 'done' : ''}"></div>`;
+  });
+  el.innerHTML = h;
+}
+
+/* ════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════ */
+function goTo(n) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('s' + n).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+
+  if (n === 2) { renderSteps('stepBar2', 2); startOtpTimer(); }
+  if (n === 3) { renderSteps('stepBar3', 3); runBiometric(); }
+  if (n === 4) { renderSteps('stepBar4', 4); }
+  if (n === 5) { renderSteps('stepBar5', 5); syncConfirmUI(); }
+  if (n === 6) { runBlockchain(); }
+  if (n === 7) { generateReceipt(); startSession(); confetti(); }
+}
+
+/* ════════════════════════════════════
+   SCREEN 1 — LOGIN
+════════════════════════════════════ */
+function fmtAadhaar(el) {
+  let v = el.value.replace(/\D/g, '').slice(0, 12);
+  el.value = v.replace(/(\d{4})(?=\d)/g, '$1 ');
+  el.classList.toggle('ok', v.length === 12);
+}
+
+function doLogin() {
+  const a = document.getElementById('inpAadhaar').value.replace(/\s/g, '');
+  const e = document.getElementById('inpEPIC').value.trim();
+  const m = document.getElementById('inpMobile').value.trim();
+  const dd = document.getElementById('inpDD').value;
+  const mm = document.getElementById('inpMM').value;
+  const yy = document.getElementById('inpYY').value;
+
+  if (a.length < 12) { shake('inpAadhaar'); return alert('Enter a valid 12-digit Aadhaar number.'); }
+  if (!e)            { shake('inpEPIC');    return alert('Enter your Voter ID (EPIC) number.'); }
+  if (!m)            { shake('inpMobile');  return alert('Enter your mobile number.'); }
+  if (!dd || !mm || !yy) { return alert('Enter your complete date of birth.'); }
+
+  // populate masked values
+  document.getElementById('mMob').textContent     = m.slice(-4);
+  document.getElementById('mAadhaar').textContent = a.slice(0,4) + ' XXXX ' + a.slice(-4);
+  goTo(2);
+}
+
+function shake(id) {
+  const el = document.getElementById(id);
+  el.classList.add('err');
+  el.animate([{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}], {duration:300});
+  setTimeout(() => el.classList.remove('err'), 2000);
+}
+
+/* ════════════════════════════════════
+   SCREEN 2 — OTP
+════════════════════════════════════ */
+function otpKey(el, idx) {
+  el.value = el.value.replace(/\D/g, '');
+  el.classList.toggle('filled', el.value.length > 0);
+  if (el.value) { const next = document.getElementById('o' + (idx + 1)); if (next) next.focus(); }
+  document.getElementById('btnVerifyOTP').disabled = getOTP().length < 6;
+}
+
+function otpBack(e, idx) {
+  if (e.key === 'Backspace' && !e.target.value && idx > 0) {
+    const prev = document.getElementById('o' + (idx - 1));
+    if (prev) { prev.value = ''; prev.classList.remove('filled'); prev.focus(); }
+  }
+}
+
+function getOTP() { return [0,1,2,3,4,5].map(i => document.getElementById('o'+i).value).join(''); }
+
+function verifyOTP() {
+  if (getOTP() === '123456') {
+    clearInterval(otpInterval);
+    goTo(3);
+  } else {
+    [0,1,2,3,4,5].forEach(i => {
+      const b = document.getElementById('o'+i);
+      b.value = ''; b.classList.remove('filled'); b.classList.add('err');
+      setTimeout(() => b.classList.remove('err'), 1500);
+    });
+    document.getElementById('o0').focus();
+    document.getElementById('btnVerifyOTP').disabled = true;
+  }
+}
+
+function startOtpTimer() {
+  otpSecs = 120;
+  clearInterval(otpInterval);
+  document.getElementById('resendBtn').disabled = true;
+  otpInterval = setInterval(() => {
+    otpSecs--;
+    const m = String(Math.floor(otpSecs / 60)).padStart(2, '0');
+    const s = String(otpSecs % 60).padStart(2, '0');
+    const el = document.getElementById('otpTimer');
+    if (el) el.textContent = `${m}:${s}`;
+    if (otpSecs <= 0) {
+      clearInterval(otpInterval);
+      const rb = document.getElementById('resendBtn');
+      if (rb) rb.disabled = false;
+    }
+  }, 1000);
+}
+
+function resendOTP() {
+  [0,1,2,3,4,5].forEach(i => { const b = document.getElementById('o'+i); b.value = ''; b.classList.remove('filled'); });
+  document.getElementById('btnVerifyOTP').disabled = true;
+  startOtpTimer();
+}
+
+/* ════════════════════════════════════
+   SCREEN 3 — BIOMETRIC
+════════════════════════════════════ */
+function runBiometric() {
+  const box   = document.getElementById('bioBox');
+  const beam  = document.getElementById('scanBeam');
+  const txt   = document.getElementById('bioTxt');
+  const btn   = document.getElementById('btnToBallot');
+  box.className = 'bio-scanner scanning';
+  beam.className = 'scan-beam go';
+  txt.style.color = 'var(--saffron)';
+  txt.textContent = '⟳ Matching biometric with UIDAI…';
+  btn.disabled = true;
+  setTimeout(() => {
+    box.className = 'bio-scanner ok';
+    beam.className = 'scan-beam';
+    txt.style.color = 'var(--success)';
+    txt.textContent = '✓ Biometric Verified — 100% Match';
+    btn.disabled = false;
+  }, 2600);
+}
+
+/* ════════════════════════════════════
+   SCREEN 4 — BALLOT
+════════════════════════════════════ */
+function pickCand(el, name, party, sym, badge, num) {
+  document.querySelectorAll('.cand, .nota-row').forEach(c => c.classList.remove('picked'));
+  el.classList.add('picked');
+  selected = { name, party, sym, badge, num };
+  document.getElementById('btnToConfirm').disabled = false;
+}
+
+function pickNOTA(el) {
+  document.querySelectorAll('.cand, .nota-row').forEach(c => c.classList.remove('picked'));
+  el.classList.add('picked');
+  selected = { name: 'NOTA', party: 'None of the Above', sym: '🚫', badge: 'NOTA · No. 0', num: '0' };
+  document.getElementById('btnToConfirm').disabled = false;
+}
+
+/* ════════════════════════════════════
+   SCREEN 5 — CONFIRM
+════════════════════════════════════ */
+function syncConfirmUI() {
+  if (!selected) return;
+  document.getElementById('cSym').textContent   = selected.sym;
+  document.getElementById('cName').textContent  = selected.name;
+  document.getElementById('cParty').textContent = selected.party + ' · Candidate No. ' + selected.num;
+}
+
+function toggleSubmit() {
+  document.getElementById('btnSubmit').disabled = !document.getElementById('pledgeCheck').checked;
+}
+
+function submitVote() { goTo(6); }
+
+/* ════════════════════════════════════
+   SCREEN 6 — BLOCKCHAIN
+════════════════════════════════════ */
+async function runBlockchain() {
+  const steps = [
+    { id:'blk1', msg:'Fetching block #1203847 from EC blockchain node…',   txt:'Connecting to EC validator network…' },
+    { id:'blk2', msg:'Applying AES-256 + Zero Knowledge Proof encryption…', txt:'Encrypting vote — content hidden from all parties…', warn:true },
+    { id:'blk3', msg:'Broadcasting to 47 validator nodes — awaiting consensus…', txt:'Mining new block — proof of stake consensus…' },
+    { id:'blk4', msg:'Writing to Election Commission DB · Voter marked VOTED.', txt:'Syncing with EC database…', warn:true },
+    { id:'blk5', msg:'Block confirmed · Transaction finalised · Receipt generated.', txt:'Generating blockchain receipt…' },
+  ];
+
+  const logEl = document.getElementById('procLog');
+  const txtEl = document.getElementById('procTxt');
+  logEl.innerHTML = '';
+
+  for (let i = 0; i < steps.length; i++) {
+    const st = steps[i];
+    const blk = document.getElementById(st.id);
+    blk.classList.add('glow');
+    txtEl.textContent = st.txt;
+
+    const row = document.createElement('div');
+    row.className = 'log-entry';
+    const ts = new Date().toLocaleTimeString('en-IN');
+    row.innerHTML = `<span class="log-ts">[${ts}]</span><span class="log-msg${st.warn?' warn':''}">${st.msg}</span>`;
+    logEl.appendChild(row);
+    logEl.scrollTop = logEl.scrollHeight;
+
+    await wait(i === 2 ? 1600 : i === 1 ? 1300 : 900);
+    blk.classList.remove('glow');
+    blk.classList.add('confirmed');
+  }
+
+  await wait(500);
+  goTo(7);
+}
+
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+/* ════════════════════════════════════
+   SCREEN 7 — RECEIPT
+════════════════════════════════════ */
+function generateReceipt() {
+  const hex = n => [...Array(n)].map(() => Math.floor(Math.random()*16).toString(16)).join('');
+  document.getElementById('rxTxHash').textContent = '0x' + hex(40);
+  document.getElementById('rxBlock').textContent  = '#' + (1203848).toLocaleString('en-IN');
+  document.getElementById('rxTime').textContent   = new Date().toISOString().replace('T',' ').slice(0,19) + ' IST';
+  document.getElementById('rxBHash').textContent  = '0x' + hex(16) + '…';
+}
+
+function startSession() {
+  sessionCountdown = 60;
+  clearInterval(sessionInterval);
+  sessionInterval = setInterval(() => {
+    sessionCountdown--;
+    const el = document.getElementById('sesTimer');
+    if (el) el.textContent = sessionCountdown;
+    if (sessionCountdown <= 0) {
+      clearInterval(sessionInterval);
+      alert('Security session expired. Please close this tab.');
+    }
+  }, 1000);
+}
+
+function verifyChain() {
+  alert('In production, this opens the EC Blockchain Explorer with your transaction hash. Your vote is anonymous — only the proof is public.');
+}
+
+/* ════════════════════════════════════
+   CONFETTI
+════════════════════════════════════ */
+function confetti() {
+  const layer = document.getElementById('confetti-layer');
+  const cols  = ['#FF6B00','#138A50','#ffffff','#FFD700','#1B3A7A','#FF8C38'];
+  for (let i = 0; i < 90; i++) {
+    setTimeout(() => {
+      const p = document.createElement('div');
+      p.className = 'conf-pc';
+      const size = Math.random() * 7 + 4;
+      p.style.cssText = `
+        left:${Math.random()*100}%;
+        background:${cols[Math.floor(Math.random()*cols.length)]};
+        width:${size}px; height:${size}px;
+        border-radius:${Math.random()>0.5?'50%':'2px'};
+        animation-duration:${Math.random()*2.5+1.5}s;
+        animation-delay:${Math.random()*0.4}s;
+      `;
+      layer.appendChild(p);
+    }, i * 18);
+  }
+  setTimeout(() => layer.innerHTML = '', 6000);
+}
+
+/* ════════════════════════════════════
+   MOBILE NAV
+════════════════════════════════════ */
+function mobileNav(n) {
+  document.querySelectorAll('.mn-item').forEach((b, i) => b.classList.toggle('active', i+1 === n));
+  if (n === 1) goTo(1);
+  if (n === 2) goTo(2);
+  if (n === 3) {
+    // show stats sidebar as modal-like overlay
+    const sidebar = document.querySelector('.sidebar');
+    if (sidebar) {
+      sidebar.style.display = sidebar.style.display === 'none' ? '' : 'none';
+    }
+  }
+  if (n === 4) alert('National Voter Helpline: 1950 (Toll-Free 24×7)\nEmail: help@eci.gov.in\nSMS: VOTE to 1950');
+}
+</script>
+</body>
+</html>
